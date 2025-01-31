@@ -5,12 +5,35 @@ from sqlalchemy import make_url
 from llama_index.llms.groq import Groq
 from llama_index.vector_stores.postgres import PGVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex, Settings
+from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex, Settings, Document
+# from llama_index import Document
+from bs4 import BeautifulSoup
+import os
+
+def preprocess_html(file_path):
+    with open(file_path, "r", encoding="utf-8") as f:
+        html_content = f.read()
+    soup = BeautifulSoup(html_content, "html.parser")
+    return soup.get_text()
+
+# Lista para armazenar os documentos processados
+documents = []
+
+# Itera sobre os arquivos HTML no diretório
+for filename in os.listdir(contents_dir):
+    if filename.endswith(".html"):
+        file_path = os.path.join(contents_dir, filename)
+        text = preprocess_html(file_path)
+        documents.append(Document(text=text))
+
+# Exibe os documentos carregados
+# for doc in documents:
+#     print(doc.text)
 
 ##### SETUP LLM #####
 Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-large-en-v1.5")
 Settings.llm = Groq(model="llama3-70b-8192")
-documents = SimpleDirectoryReader(contents_dir).load_data()
+# documents = SimpleDirectoryReader(contents_dir).load_data()
 
 ##### SETUP POSTGRES #####
 conn = psycopg2.connect(connection_string)
