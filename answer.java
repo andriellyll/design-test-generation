@@ -18,4 +18,28 @@ public class StatelessStrategyPatternChecker {
     private List<Class<?>> getSubclasses(Class<?> clazz) {         // Implement a method to get all subclasses of the givenclass 
     // You can access the "Use" page of the interface A to find all subclasses of A 
     }
-} ```
+} 
+
+
+@Test
+public void testStrategyImplementationIsStateless() throws Exception {     
+    DesignWizard dw = new DesignWizard("src/org/designwizard");
+    ClassNode strategyInterface = dw.getClass("org.designwizard.design.Strategy");
+    List<ClassNode> implementations = dw.getImplementations(strategyInterface);
+    
+    for (ClassNode implementation : implementations) {
+        assertFalse("Implementation " + implementation.getName() + " has state attributes", hasStateAttributes(implementation));
+    }
+}  
+    
+private boolean hasStateAttributes(ClassNode classNode) {
+    for (FieldNode field : classNode.getFields()) {
+        if (!field.isStatic() && !field.isFinal()) {
+            return true;
+        }
+    }
+    
+    return false;
+    
+} 
+

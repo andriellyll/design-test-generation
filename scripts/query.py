@@ -6,9 +6,46 @@ from llama_index.vector_stores.postgres import PGVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import VectorStoreIndex, Settings
 
+system_prompt = """ 
+You are an assistant specialized in software engineering and design testing. 
+Your task is to generate Java test case code using JUnit and Design Wizard to verify a given design rule.
+
+## Instructions:
+- You will receive a design rule as input.
+- Your output should be only the corresponding Java test code, without any explanations.
+- Use JUnit and Design Wizard to implement the test.
+
+## Example:
+
+### Input (Design Rule):
+The `Strategy` pattern requires the context to use the `Strategy` interface, so concrete classes should never be referenced directly.
+
+### Output (Java Test Code):
+```java
+@Test
+    public void testContextOnlyKnowsStrategyInterface() throws Exception {
+        DesignWizard dw = new DesignWizard("src/com/cnblog/clarck");
+        ClassNode concreateStrategyA = dw.getClass("com.cnblog.clarck.ConcreateStrategyA");
+        ClassNode concreateStrategyB = dw.getClass("com.cnblog.clarck.ConcreateStrategyB");
+        ClassNode concreateStrategyC = dw.getClass("com.cnblog.clarck.ConcreateStrategyC");
+        ClassNode strategyClass = dw.getClass("com.cnblog.clarck.Strategy");
+        ClassNode context = dw.getClass("com.cnblog.clarck.Context");
+        Set<ClassNode> calleeClasses = context.getCalleeClasses();
+
+        assertTrue(calleeClasses.contains(strategyClass));
+        assertFalse(calleeClasses.contains(concreateStrategyA));
+        assertFalse(calleeClasses.contains(concreateStrategyB));
+        assertFalse(calleeClasses.contains(concreateStrategyC));
+    }
+```
+"""
+
 ##### SETUP LLM #####
 Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-large-en-v1.5")
-Settings.llm = Groq(model="llama3-70b-8192")
+Settings.llm = Groq(
+    model="llama3-70b-8192",
+    system_prompt=system_prompt   
+)
 
 ##### CREATING THE INDEX #####
 url = make_url(connection_string)
@@ -36,46 +73,17 @@ hybrid_query_engine = hybrid_index.as_query_engine(
     vector_store_query_mode = "hybrid", sparse_top_k=2
 )
 
-query = "How could I print all methods of a class using the Design Wizard library?"
+query = "The concrete class needs to implement the `Strategy` interface to ensure that the `execute` method adheres to the defined contract."
 
-hybrid_response = hybrid_query_engine.query(
-    """
-        Generate a test case code using JUnit and Design Wizard to verify the following rule:
-        - The `Strategy` interface was designed to be stateless, so avoid adding state attributes to its implementations.
-
-        Example:
-            Rule:
-                The concrete class needs to implement the `Strategy` interface to ensure that the `execute` method adheres to the defined contract.
-            Code:
-                @Test
-                public void testConcreteImplementsStrategy() throws Exception {
-                    DesignWizard dw = new DesignWizard("src/com/cnblog/clarck");
-                    ClassNode classNode = dw.getClass("com.cnblog.clarck.ConcreateStrategyA");
-                    ClassNode classNode2 = dw.getClass("com.cnblog.clarck.Strategy");
-                    assertTrue(classNode.extendsClass(classNode2));
-                }
-    """
-)   
-
+hybrid_response = hybrid_query_engine.query(query)  
+retrieved_docs = hybrid_query_engine.retrieve(query)
 # Exibe os documentos retornados pelo retriever
-# print("\n🔍 DOCUMENTOS RECUPERADOS PELO RETRIEVER:\n")
-# for i, doc in enumerate(retrieved_docs):
-#     print(f"📄 Documento {i+1}:")
-#     print(doc.text)
-#     print("-" * 80)
+print("\n🔍 DOCUMENTOS RECUPERADOS PELO RETRIEVER:\n")
+for i, doc in enumerate(retrieved_docs):
+    print(f"📄 Documento {i+1}:")
+    print(doc.text)
+    print("-" * 80)
 
-# # Agora, passa para o LLM gerar a resposta
-# hybrid_response = hybrid_query_engine.query(query)
-
-# # Exibe a resposta final
-# print("\n🤖 RESPOSTA DO LLM:\n")
-# print(textwrap.fill(str(hybrid_response), 100))
-
+print("RESPOSTA DO LLM:\n")
 print(textwrap.fill(str(hybrid_response), 100))
 
-
-# Perguntas úteis para teste:
-#   What means 'Keep the core clean' in prism?
-#   Which Java version should be used to create a new service in bom?
-#   Describe how can I onboard a new service in bom
-#   What can the user search in the search pane?
