@@ -7,37 +7,60 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import VectorStoreIndex, Settings
 
 system_prompt = """ 
-You are an assistant specialized in software engineering and design testing. 
-Your task is to generate Java test case code using JUnit and Design Wizard to verify a given design rule.
+You are an assistant specialized in software engineering and design testing.  
+Your task is to generate **Java test case code** using **JUnit and Design Wizard** to verify a given design rule.
 
-## Instructions:
-- You will receive a design rule as input.
-- Your output should be only the corresponding Java test code, without any explanations.
-- Use JUnit and Design Wizard to implement the test.
+## **Instructions**:
+- You will receive a **design rule** as input.
+- You will also receive **extracted documentation** from the **Design Wizard** library.
+- **Follow a step-by-step reasoning process** to determine the best way to verify the rule before generating the test code.
+- Your final output should **only contain the Java test code** (without explanations), but follow this internal reasoning process before producing the output:
 
-## Example:
+## **Reasoning Process**:
+1. **Understand the Design Rule**  
+   - Analyze the given design rule carefully.  
+   - Identify what needs to be **enforced** or **restricted** in the code.
 
-### Input (Design Rule):
-The `Strategy` pattern requires the context to use the `Strategy` interface, so concrete classes should never be referenced directly.
+2. **Extract Relevant Information from the Documentation**  
+   - Focus only on the parts of the Design Wizard documentation that **directly help** enforce the given rule.  
+   - Identify the key methods/classes in Design Wizard that should be used.
 
-### Output (Java Test Code):
+3. **Define the Test Strategy**  
+   - Determine the **classes, methods, or relationships** that need to be verified.  
+   - Decide which assertions should be used to check compliance with the design rule.
+
+4. **Generate the Java Test Code**  
+   - Implement the JUnit test using Design Wizard.  
+   - Ensure the test effectively enforces the rule.
+
+## **Example**:
+
+### **Input (Design Rule)**:
+> The `Strategy` pattern requires the context to use the `Strategy` interface,  
+> so concrete classes should never be referenced directly.
+
+### **Output (Java Test Code)**:
 ```java
 @Test
-    public void testContextOnlyKnowsStrategyInterface() throws Exception {
-        DesignWizard dw = new DesignWizard("src/com/cnblog/clarck");
-        ClassNode concreateStrategyA = dw.getClass("com.cnblog.clarck.ConcreateStrategyA");
-        ClassNode concreateStrategyB = dw.getClass("com.cnblog.clarck.ConcreateStrategyB");
-        ClassNode concreateStrategyC = dw.getClass("com.cnblog.clarck.ConcreateStrategyC");
-        ClassNode strategyClass = dw.getClass("com.cnblog.clarck.Strategy");
-        ClassNode context = dw.getClass("com.cnblog.clarck.Context");
-        Set<ClassNode> calleeClasses = context.getCalleeClasses();
+public void testContextOnlyKnowsStrategyInterface() throws Exception {
+    DesignWizard dw = new DesignWizard("src/com/cnblog/clarck");
+    ClassNode concreateStrategyA = dw.getClass("com.cnblog.clarck.ConcreateStrategyA");
+    ClassNode concreateStrategyB = dw.getClass("com.cnblog.clarck.ConcreateStrategyB");
+    ClassNode concreateStrategyC = dw.getClass("com.cnblog.clarck.ConcreateStrategyC");
+    ClassNode strategyClass = dw.getClass("com.cnblog.clarck.Strategy");
+    ClassNode context = dw.getClass("com.cnblog.clarck.Context");
+    Set<ClassNode> calleeClasses = context.getCalleeClasses();
 
-        assertTrue(calleeClasses.contains(strategyClass));
-        assertFalse(calleeClasses.contains(concreateStrategyA));
-        assertFalse(calleeClasses.contains(concreateStrategyB));
-        assertFalse(calleeClasses.contains(concreateStrategyC));
-    }
+    assertTrue(calleeClasses.contains(strategyClass));
+    assertFalse(calleeClasses.contains(concreateStrategyA));
+    assertFalse(calleeClasses.contains(concreateStrategyB));
+    assertFalse(calleeClasses.contains(concreateStrategyC));
+}
 ```
+
+In this example, the relevant documentation from **Design Wizard** includes:
+- How to retrieve a **ClassNode** for a given class.
+- How to get the **callee classes** of a given class.
 """
 
 ##### SETUP LLM #####
@@ -73,7 +96,9 @@ hybrid_query_engine = hybrid_index.as_query_engine(
     vector_store_query_mode = "hybrid", sparse_top_k=2
 )
 
-query = "The concrete class needs to implement the `Strategy` interface to ensure that the `execute` method adheres to the defined contract."
+# query = "The concrete class needs to implement the `Strategy` interface to ensure that the `execute` method adheres to the defined contract."
+
+query = "The product class should be independent of the Builder — the Builder is responsible for assembling the product, but the product doesn’t know about the Builder."
 
 hybrid_response = hybrid_query_engine.query(query)  
 retrieved_docs = hybrid_query_engine.retrieve(query)
