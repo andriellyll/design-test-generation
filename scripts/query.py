@@ -5,6 +5,13 @@ from llama_index.llms.groq import Groq
 from llama_index.vector_stores.postgres import PGVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core import VectorStoreIndex, Settings
+from dotenv import load_dotenv
+from llama_index.llms.mistralai import MistralAI
+import pandas as pd
+import time
+from datetime import datetime
+
+load_dotenv()
 
 system_prompt = """ 
 You are an assistant specialized in software engineering and design testing.  
@@ -65,9 +72,15 @@ In this example, the relevant documentation from **Design Wizard** includes:
 
 ##### SETUP LLM #####
 Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-large-en-v1.5")
-Settings.llm = Groq(
-    model="llama3-70b-8192",
-    system_prompt=system_prompt   
+# Settings.llm = Groq(
+#     model="llama3-70b-8192",
+#     system_prompt=system_prompt   
+# )
+
+Settings.llm = MistralAI(
+    model="codestral-latest",
+    system_prompt=system_prompt,
+    temperature=0.1
 )
 
 ##### CREATING THE INDEX #####
@@ -96,19 +109,42 @@ hybrid_query_engine = hybrid_index.as_query_engine(
     vector_store_query_mode = "hybrid", sparse_top_k=2
 )
 
+df = pd.read_csv('dataset.csv')
+rules = df["Texto"]
+
 # query = "The concrete class needs to implement the `Strategy` interface to ensure that the `execute` method adheres to the defined contract."
 
-query = "The product class should be independent of the Builder — the Builder is responsible for assembling the product, but the product doesn’t know about the Builder."
+# query = "Avoid tightly coupling the Director to a specific Builder — it should only know about the Builder interface."
 
-hybrid_response = hybrid_query_engine.query(query)  
-retrieved_docs = hybrid_query_engine.retrieve(query)
-# Exibe os documentos retornados pelo retriever
-print("\n🔍 DOCUMENTOS RECUPERADOS PELO RETRIEVER:\n")
-for i, doc in enumerate(retrieved_docs):
-    print(f"📄 Documento {i+1}:")
-    print(doc.text)
-    print("-" * 80)
+    # retrieved_docs = hybrid_query_engine.retrieve(rule)
+    
+    # print("\nDOCUMENTOS RECUPERADOS PELO RETRIEVER:\n")
+    # for i, doc in enumerate(retrieved_docs):
+    #     print(f"Documento {i+1}:")
+    #     print(doc.text)
+    #     print("-" * 80)
+date_now = datetime.now().strftime('%Y%m%d_%H%M%S')
+output_file = f"saida-{date_now}.txt"
 
-print("RESPOSTA DO LLM:\n")
-print(textwrap.fill(str(hybrid_response), 100))
+with open(output_file, "w") as f:
+    pass
+
+for rule in rules:
+    print(f"Gerando código para regra: {rule}")
+    hybrid_response = hybrid_query_engine.query(rule)  
+
+    print("\nRESPOSTA DO LLM:")
+    print("-" * 80)  # Linha separadora
+    print(str(hybrid_response))
+    print("-" * 80)  # Linha separadora
+    print("\n")
+    
+    with open(output_file, "a") as f:
+        f.write("-" * 60)
+        f.write(f"\nRESPOSTA PARA REGRA {rule}\n")
+        f.write("-" * 60)
+        f.write(f"\n{str(hybrid_response)}\n\n\n\n")
+        
+
+    time.sleep(30)
 
