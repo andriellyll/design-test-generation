@@ -1,0 +1,144 @@
+------------------------------------------------------------
+RESPOSTA PARA REGRA Each Concrete Builder should extend the Builder abstract class and provide specific implementations for constructing parts of the product.
+------------------------------------------------------------
+```java
+@Test
+public void testConcreteBuildersExtendBuilder() throws Exception {
+    DesignWizard dw = new DesignWizard("bin");
+    ClassNode builderClass = dw.getClass("com.cnblog.clarck.Builder");
+    ClassNode concreteBuilder1 = dw.getClass("com.cnblog.clarck.ConcrateBuilder1");
+    ClassNode concreteBuilder2 = dw.getClass("com.cnblog.clarck.ConcrateBuilder2");
+
+    assertTrue(concreteBuilder1.extendsClass(builderClass));
+    assertTrue(concreteBuilder2.extendsClass(builderClass));
+}
+
+@Test
+public void testConcreteBuildersImplementBuildMethods() throws Exception {
+    DesignWizard dw = new DesignWizard("bin");
+    ClassNode concreteBuilder1 = dw.getClass("com.cnblog.clarck.ConcrateBuilder1");
+    ClassNode concreteBuilder2 = dw.getClass("com.cnblog.clarck.ConcrateBuilder2");
+
+    MethodNode buildPartA1 = concreteBuilder1.getDeclaredMethod("buildPartA()");
+    MethodNode buildPartB1 = concreteBuilder1.getDeclaredMethod("buildPartB()");
+    MethodNode buildPartA2 = concreteBuilder2.getDeclaredMethod("buildPartA()");
+    MethodNode buildPartB2 = concreteBuilder2.getDeclaredMethod("buildPartB()");
+
+    assertNotNull(buildPartA1);
+    assertNotNull(buildPartB1);
+    assertNotNull(buildPartA2);
+    assertNotNull(buildPartB2);
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA The product class should be independent of the Builder — the Builder is responsible for assembling the product, but the product doesn’t know about the Builder.
+------------------------------------------------------------
+To verify that the `Product` class is independent of the `Builder`, you can write a test that ensures the `Product` class does not reference any `Builder` classes directly. Here is the Java test code using JUnit and Design Wizard:
+
+```java
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.junit.Test;
+
+import java.util.Set;
+
+import static org.junit.Assert.assertFalse;
+
+public class ProductIndependenceTest {
+
+    @Test
+    public void testProductIndependence() {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode productClass = dw.getClass("com.cnblog.clarck.Product");
+        ClassNode builderClass = dw.getClass("com.cnblog.clarck.Builder");
+        ClassNode concreteBuilder1Class = dw.getClass("com.cnblog.clarck.ConcrateBuilder1");
+        ClassNode concreteBuilder2Class = dw.getClass("com.cnblog.clarck.ConcrateBuilder2");
+
+        Set<ClassNode> calleeClasses = productClass.getCalleeClasses();
+
+        assertFalse(calleeClasses.contains(builderClass));
+        assertFalse(calleeClasses.contains(concreteBuilder1Class));
+        assertFalse(calleeClasses.contains(concreteBuilder2Class));
+    }
+}
+```
+
+This test initializes the `DesignWizard` with the directory containing the compiled class files. It then retrieves the `ClassNode` objects for the `Product` class and the `Builder` classes. The test checks that the `Product` class does not reference any of the `Builder` classes directly by asserting that the `calleeClasses` set does not contain the `Builder` classes.
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA Avoid tightly coupling the Director to a specific Builder — it should only know about the Builder class.
+------------------------------------------------------------
+To ensure that the Director class is not tightly coupled to a specific Builder, you should design the Director class to interact with the Builder class through an interface or abstract class. This way, the Director class can work with any class that implements or extends the Builder interface or abstract class, promoting flexibility and adherence to the design rule.
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA The final product should only be accessible through a getResult() method, preventing incomplete object creation.
+------------------------------------------------------------
+```java
+@Test
+public void testProductOnlyAccessibleThroughGetResult() throws Exception {
+    DesignWizard dw = new DesignWizard("bin");
+    ClassNode productClass = dw.getClass("com.cnblog.clarck.Product");
+    ClassNode directorClass = dw.getClass("com.cnblog.clarck.Director");
+    ClassNode builderClass = dw.getClass("com.cnblog.clarck.Builder");
+    ClassNode concreteBuilder1Class = dw.getClass("com.cnblog.clarck.ConcrateBuilder1");
+    ClassNode concreteBuilder2Class = dw.getClass("com.cnblog.clarck.ConcrateBuilder2");
+
+    Set<MethodNode> productMethods = productClass.getAllMethods();
+    Set<MethodNode> directorMethods = directorClass.getAllMethods();
+    Set<MethodNode> builderMethods = builderClass.getAllMethods();
+    Set<MethodNode> concreteBuilder1Methods = concreteBuilder1Class.getAllMethods();
+    Set<MethodNode> concreteBuilder2Methods = concreteBuilder2Class.getAllMethods();
+
+    MethodNode getResultMethod = null;
+    for (MethodNode method : productMethods) {
+        if (method.getShortName().equals("getResult")) {
+            getResultMethod = method;
+            break;
+        }
+    }
+
+    assertNotNull(getResultMethod);
+
+    for (MethodNode method : directorMethods) {
+        assertFalse(method.getCalleeMethods().contains(getResultMethod));
+    }
+
+    for (MethodNode method : builderMethods) {
+        assertFalse(method.getCalleeMethods().contains(getResultMethod));
+    }
+
+    for (MethodNode method : concreteBuilder1Methods) {
+        assertFalse(method.getCalleeMethods().contains(getResultMethod));
+    }
+
+    for (MethodNode method : concreteBuilder2Methods) {
+        assertFalse(method.getCalleeMethods().contains(getResultMethod));
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA The Builder and the Product class should be placed in the same package to restrict direct instantiation while allowing controlled access.
+------------------------------------------------------------
+```java
+@Test
+public void testBuilderAndProductInSamePackage() throws Exception {
+    DesignWizard dw = new DesignWizard("bin");
+    PackageNode builderPackage = dw.getPackage("com.cnblog.clarck");
+    PackageNode productPackage = dw.getPackage("com.cnblog.clarck");
+
+    assertEquals(builderPackage, productPackage);
+}
+```
+
+
+

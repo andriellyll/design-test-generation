@@ -1,0 +1,4 @@
+------------------------------------------------------------
+RESPOSTA PARA REGRA Each strategy must implement the `algorithmInterface` method defined in the abstract class.
+------------------------------------------------------------
+No, each strategy does not need to implement the `algorithmInterface` method.

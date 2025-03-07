@@ -1,0 +1,173 @@
+------------------------------------------------------------
+RESPOSTA PARA REGRA The Adapter class must extend the target class so the client can interact with it seamlessly.
+------------------------------------------------------------
+To verify that the Adapter class extends the Target class, you can write a test using JUnit and the Design Wizard library. This test will check if the Adapter class is a subclass of the Target class.
+
+Here is the Java test code:
+
+```java
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+
+public class AdapterTest {
+
+    @Test
+    public void testAdapterExtendsTarget() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode adapterClass = dw.getClass("com.cnblog.clarck.Adapter");
+        ClassNode targetClass = dw.getClass("com.cnblog.clarck.Target");
+
+        assertTrue(adapterClass.extendsClass(targetClass));
+    }
+}
+```
+
+This test initializes the DesignWizard with the path to the compiled classes, retrieves the ClassNode objects for the Adapter and Target classes, and then asserts that the Adapter class extends the Target class.
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA Use composition instead of inheritance in the Adapter to wrap the adaptee, keeping the two classes loosely coupled.
+------------------------------------------------------------
+```java
+import org.designwizard.design.Design;
+import org.designwizard.design.ClassNode;
+import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+
+public class AdapterDesignTest {
+
+    @Test
+    public void testAdapterUsesCompositionInsteadOfInheritance() throws Exception {
+        Design design = new Design();
+        ClassNode adapterClass = design.getClass("com.cnblog.clarck.Adapter");
+        ClassNode adapteeClass = design.getClass("com.cnblog.clarck.Adaptee");
+
+        // Check if Adapter class has a field of type Adaptee
+        assertTrue(adapterClass.getAllFields().stream()
+                .anyMatch(field -> field.getType().equals(adapteeClass)));
+
+        // Check if Adapter class does not extend Adaptee class
+        assertFalse(adapterClass.extendsClass(adapteeClass));
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA The Adapter should expose only the methods defined in the target class, even if the adaptee has additional functionality.
+------------------------------------------------------------
+```java
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.designwizard.design.MethodNode;
+import org.junit.Test;
+
+import java.util.Set;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+public class AdapterTest {
+
+    @Test
+    public void testAdapterExposesOnlyTargetMethods() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode adapterClass = dw.getClass("com.cnblog.clarck.Adapter");
+        ClassNode targetClass = dw.getClass("com.cnblog.clarck.Target");
+        ClassNode adapteeClass = dw.getClass("com.cnblog.clarck.Adaptee");
+
+        Set<MethodNode> adapterMethods = adapterClass.getDeclaredMethods();
+        Set<MethodNode> targetMethods = targetClass.getDeclaredMethods();
+        Set<MethodNode> adapteeMethods = adapteeClass.getDeclaredMethods();
+
+        for (MethodNode method : adapterMethods) {
+            assertTrue(targetMethods.contains(method));
+        }
+
+        for (MethodNode method : adapteeMethods) {
+            assertFalse(adapterMethods.contains(method));
+        }
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA The Adapter should delegate all calls to the Adaptee, converting method signatures and data formats as needed.
+------------------------------------------------------------
+To verify that the Adapter delegates all calls to the Adaptee, converting method signatures and data formats as needed, you can write a test case using JUnit and Design Wizard. This test will ensure that the Adapter class correctly references the Adaptee class and its methods.
+
+Here is the Java test code:
+
+```java
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.designwizard.design.MethodNode;
+import org.junit.Test;
+
+import java.util.Set;
+
+import static org.junit.Assert.assertTrue;
+
+public class AdapterTest {
+
+    @Test
+    public void testAdapterDelegatesCallsToAdaptee() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode adapterClass = dw.getClass("com.cnblog.clarck.Adapter");
+        ClassNode adapteeClass = dw.getClass("com.cnblog.clarck.Adaptee");
+
+        Set<ClassNode> calleeClasses = adapterClass.getCalleeClasses();
+        Set<MethodNode> calleeMethods = adapterClass.getCalleeMethods();
+
+        assertTrue(calleeClasses.contains(adapteeClass));
+
+        MethodNode adapteeMethod = adapteeClass.getDeclaredMethod("specificRequest()");
+        assertTrue(calleeMethods.contains(adapteeMethod));
+    }
+}
+```
+
+This test case does the following:
+1. Initializes the DesignWizard with the path to the compiled classes.
+2. Retrieves the `ClassNode` objects for the `Adapter` and `Adaptee` classes.
+3. Gets the classes and methods that the `Adapter` references.
+4. Asserts that the `Adaptee` class is among the referenced classes.
+5. Asserts that the `specificRequest` method of the `Adaptee` class is among the referenced methods.
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA Avoid exposing the Adaptee directly to the client, as this breaks encapsulation and defeats the purpose of the Adapter.
+------------------------------------------------------------
+```java
+import org.designwizard.design.DesignWizard;
+import org.designwizard.design.MethodNode;
+import org.junit.Test;
+import java.util.Set;
+
+import static org.junit.Assert.assertFalse;
+
+public class AdapterPatternTest {
+
+    @Test
+    public void testClientDoesNotDirectlyAccessAdaptee() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        MethodNode clientMainMethod = dw.getMethod("com.cnblog.clarck.Client.main(java.lang.String[])");
+        Set<MethodNode> calleeMethods = clientMainMethod.getCalleeMethods();
+
+        MethodNode adapteeSpecificRequest = dw.getMethod("com.cnblog.clarck.Adaptee.specificRequest()");
+
+        assertFalse(calleeMethods.contains(adapteeSpecificRequest));
+    }
+}
+```
+
+
+

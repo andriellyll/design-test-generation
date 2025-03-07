@@ -1,0 +1,150 @@
+------------------------------------------------------------
+RESPOSTA PARA REGRA Every component, whether it’s a leaf or a composite, must extend the Component abstract class to ensure consistent behavior.
+------------------------------------------------------------
+```java
+import org.designwizard.design.Design;
+import org.designwizard.design.ClassNode;
+import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+
+public class ComponentInheritanceTest {
+
+    @Test
+    public void testAllComponentsExtendComponentClass() {
+        Design design = new Design();
+        design.addClassExtractedFromCode("com.cnblog.clarck.Leaf");
+        design.addClassExtractedFromCode("com.cnblog.clarck.Composite");
+        design.addClassExtractedFromCode("com.cnblog.clarck.Component");
+
+        ClassNode leafClass = design.getClass("com.cnblog.clarck.Leaf");
+        ClassNode compositeClass = design.getClass("com.cnblog.clarck.Composite");
+        ClassNode componentClass = design.getClass("com.cnblog.clarck.Component");
+
+        assertTrue(leafClass.extendsClass(componentClass));
+        assertTrue(compositeClass.extendsClass(componentClass));
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA Make sure the leaf nodes don’t have any children — their methods should operate as if they are the end of the hierarchy.
+------------------------------------------------------------
+```java
+import static org.junit.Assert.assertTrue;
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.designwizard.design.MethodNode;
+import org.junit.Test;
+
+import java.util.Set;
+
+public class LeafNodeTest {
+
+    @Test
+    public void testLeafNodesHaveNoChildren() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode leafClass = dw.getClass("com.cnblog.clarck.Leaf");
+        Set<MethodNode> methods = leafClass.getAllMethods();
+
+        for (MethodNode method : methods) {
+            Set<ClassNode> calleeClasses = method.getCalleeClasses();
+            assertTrue("Leaf node methods should not call other classes", calleeClasses.isEmpty());
+        }
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA Instead of exposing direct references to child nodes, the composite should provide methods to manage children, like add, remove, or getChild.
+------------------------------------------------------------
+```java
+@Test
+public void testCompositeManagesChildren() throws Exception {
+    DesignWizard dw = new DesignWizard("bin");
+    ClassNode compositeClass = dw.getClass("com.cnblog.clarck.Composite");
+    ClassNode leafClass = dw.getClass("com.cnblog.clarck.Leaf");
+
+    Set<MethodNode> compositeMethods = compositeClass.getDeclaredMethods();
+
+    boolean hasAddMethod = false;
+    boolean hasRemoveMethod = false;
+
+    for (MethodNode method : compositeMethods) {
+        if (method.getShortName().equals("add(com.cnblog.clarck.Component)")) {
+            hasAddMethod = true;
+        }
+        if (method.getShortName().equals("remove(com.cnblog.clarck.Component)")) {
+            hasRemoveMethod = true;
+        }
+    }
+
+    assertTrue(hasAddMethod);
+    assertTrue(hasRemoveMethod);
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA Leaf nodes must not contain references to other components, as they represent indivisible elements in the hierarchy.
+------------------------------------------------------------
+```java
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.junit.Test;
+
+import java.util.Set;
+
+import static org.junit.Assert.assertTrue;
+
+public class LeafNodeTest {
+
+    @Test
+    public void testLeafNodesDoNotReferenceOtherComponents() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode leafClass = dw.getClass("com.cnblog.clarck.Leaf");
+        Set<ClassNode> calleeClasses = leafClass.getCalleeClasses();
+
+        ClassNode componentClass = dw.getClass("com.cnblog.clarck.Component");
+        ClassNode compositeClass = dw.getClass("com.cnblog.clarck.Composite");
+
+        assertTrue(calleeClasses.isEmpty());
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA Avoid introducing direct dependencies between Composite and concrete Leaf implementations to preserve flexibility when extending the hierarchy.
+------------------------------------------------------------
+```java
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.junit.Test;
+
+import java.util.Set;
+
+import static org.junit.Assert.assertFalse;
+
+public class CompositePatternTest {
+
+    @Test
+    public void testCompositeDoesNotDependOnConcreteLeaf() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode compositeClass = dw.getClass("com.cnblog.clarck.Composite");
+        ClassNode leafClass = dw.getClass("com.cnblog.clarck.Leaf");
+
+        Set<ClassNode> calleeClasses = compositeClass.getCalleeClasses();
+
+        assertFalse(calleeClasses.contains(leafClass));
+    }
+}
+```
+
+
+

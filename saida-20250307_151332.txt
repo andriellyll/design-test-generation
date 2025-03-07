@@ -1,0 +1,162 @@
+------------------------------------------------------------
+RESPOSTA PARA REGRA Only the `Facade` class should directly interact with the subsystems — all other classes must interact exclusively through the `Facade`.
+------------------------------------------------------------
+```java
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.designwizard.design.PackageNode;
+import org.junit.Test;
+import java.util.Set;
+
+public class FacadeTest {
+
+    @Test
+    public void testFacadeInteractsWithSubsystems() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        PackageNode facadePackage = dw.getPackage("com.cnblog.clarck");
+        ClassNode facadeClass = dw.getClass("com.cnblog.clarck.Facade");
+        Set<ClassNode> facadeCalleeClasses = facadeClass.getCalleeClasses();
+
+        assertTrue(facadeCalleeClasses.contains(dw.getClass("com.cnblog.clarck.SubSystemOne")));
+        assertTrue(facadeCalleeClasses.contains(dw.getClass("com.cnblog.clarck.SubSystemTwo")));
+        assertTrue(facadeCalleeClasses.contains(dw.getClass("com.cnblog.clarck.SubSystemThree")));
+        assertTrue(facadeCalleeClasses.contains(dw.getClass("com.cnblog.clarck.SubSystemFour")));
+    }
+
+    @Test
+    public void testOtherClassesInteractThroughFacade() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        PackageNode facadePackage = dw.getPackage("com.cnblog.clarck");
+        ClassNode facadeClass = dw.getClass("com.cnblog.clarck.Facade");
+        Set<ClassNode> facadeCallerClasses = facadeClass.getCallerClasses();
+
+        for (ClassNode callerClass : facadeCallerClasses) {
+            if (!callerClass.getName().equals("com.cnblog.clarck.Facade")) {
+                Set<ClassNode> callerCalleeClasses = callerClass.getCalleeClasses();
+                assertFalse(callerCalleeClasses.contains(dw.getClass("com.cnblog.clarck.SubSystemOne")));
+                assertFalse(callerCalleeClasses.contains(dw.getClass("com.cnblog.clarck.SubSystemTwo")));
+                assertFalse(callerCalleeClasses.contains(dw.getClass("com.cnblog.clarck.SubSystemThree")));
+                assertFalse(callerCalleeClasses.contains(dw.getClass("com.cnblog.clarck.SubSystemFour")));
+            }
+        }
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA The `Facade` class should be aware of the internal subsystems, but the subsystems should not depend on or have knowledge of the `Facade`.
+------------------------------------------------------------
+```java
+@Test
+public void testFacadeKnowsSubsystemsButSubsystemsDoNotKnowFacade() throws Exception {
+    DesignWizard dw = new DesignWizard("bin");
+    ClassNode facade = dw.getClass("com.cnblog.clarck.Facede");
+    ClassNode subsystemOne = dw.getClass("com.cnblog.clarck.SubSystemOne");
+    ClassNode subsystemTwo = dw.getClass("com.cnblog.clarck.SubSystemTwo");
+    ClassNode subsystemThree = dw.getClass("com.cnblog.clarck.SubSystemThree");
+    ClassNode subsystemFour = dw.getClass("com.cnblog.clarck.SubSystemFour");
+
+    Set<ClassNode> facadeCalleeClasses = facade.getCalleeClasses();
+    Set<ClassNode> subsystemOneCallerClasses = subsystemOne.getCallerClasses();
+    Set<ClassNode> subsystemTwoCallerClasses = subsystemTwo.getCallerClasses();
+    Set<ClassNode> subsystemThreeCallerClasses = subsystemThree.getCallerClasses();
+    Set<ClassNode> subsystemFourCallerClasses = subsystemFour.getCallerClasses();
+
+    assertTrue(facadeCalleeClasses.contains(subsystemOne));
+    assertTrue(facadeCalleeClasses.contains(subsystemTwo));
+    assertTrue(facadeCalleeClasses.contains(subsystemThree));
+    assertTrue(facadeCalleeClasses.contains(subsystemFour));
+
+    assertFalse(subsystemOneCallerClasses.contains(facade));
+    assertFalse(subsystemTwoCallerClasses.contains(facade));
+    assertFalse(subsystemThreeCallerClasses.contains(facade));
+    assertFalse(subsystemFourCallerClasses.contains(facade));
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA The internal classes that compose the subsystems must not be directly accessible outside the package — this reinforces the use of the `Facade`.
+------------------------------------------------------------
+```java
+@Test
+public void testInternalClassesNotAccessibleOutsidePackage() throws Exception {
+    DesignWizard dw = new DesignWizard("bin");
+    PackageNode packageNode = dw.getPackage("com.cnblog.clarck");
+
+    Set<ClassNode> callerClasses = packageNode.getCallerClasses();
+    Set<ClassNode> allClasses = packageNode.getAllClasses();
+
+    for (ClassNode classNode : allClasses) {
+        if (!classNode.getPackage().equals(packageNode)) {
+            assertFalse(callerClasses.contains(classNode), "Class " + classNode.getName() + " is accessible outside the package.");
+        }
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA A Facade should be implemented as a concrete class, not an interface, since it represents a fixed entry point to a subsystem.
+------------------------------------------------------------
+To verify that the Facade is implemented as a concrete class and not an interface, you can use Design Wizard to retrieve the ClassNode for the Facade and check its type. Here is the Java test code using JUnit and Design Wizard:
+
+```java
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+
+public class FacadeTest {
+
+    @Test
+    public void testFacadeIsConcreteClass() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode facadeClass = dw.getClass("com.cnblog.clarck.Facede");
+
+        assertTrue(facadeClass.isClass());
+    }
+}
+```
+
+
+
+------------------------------------------------------------
+RESPOSTA PARA REGRA The Facade should only expose methods necessary for client interactions, keeping its API minimal to reduce coupling.
+------------------------------------------------------------
+```java
+import org.designwizard.DesignWizard;
+import org.designwizard.design.ClassNode;
+import org.designwizard.design.MethodNode;
+import org.junit.Test;
+
+import java.util.Set;
+
+import static org.junit.Assert.assertTrue;
+
+public class FacadeTest {
+
+    @Test
+    public void testFacadeOnlyExposesNecessaryMethods() throws Exception {
+        DesignWizard dw = new DesignWizard("bin");
+        ClassNode facade = dw.getClass("com.cnblog.clarck.Facede");
+        ClassNode client = dw.getClass("com.cnblog.clarck.Client");
+
+        Set<MethodNode> facadeMethods = facade.getDeclaredMethods();
+        Set<MethodNode> clientMethods = client.getDeclaredMethods();
+
+        for (MethodNode method : facadeMethods) {
+            assertTrue(clientMethods.contains(method));
+        }
+    }
+}
+```
+
+
+
