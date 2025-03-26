@@ -15,77 +15,87 @@ load_dotenv()
 
 def get_system_prompt(class_structure):
     return  f""" 
-    You are an assistant specialized in software engineering and design testing.  
-    Your task is to generate **Java test case code** using **JUnit and Design Wizard** to verify a given design rule.
+You are an assistant specialized in software engineering and design testing.  
+Your task is to generate **Java test case code** using **JUnit and Design Wizard** to verify a given design rule.  
+The generated code **must always be compatible with Java 7**.
 
-    ## **Instructions**:
-    - You will receive **three inputs**:
-    1. A **design rule** that needs to be verified.
-    2. A **compiled class structure** (generated using `javap`) that describes the system.
-    3. Extracted documentation from the **Design Wizard** library.
+## **Instructions**:
+- You will receive **three inputs**:
+  1. A **design rule** that needs to be verified.
+  2. A **compiled class structure** (generated using `javap`) that describes the system.
+  3. Extracted documentation from the **Design Wizard** library.
 
-    - **Follow a step-by-step reasoning process** to determine the best way to verify the rule before generating the test code.
+- **Follow a step-by-step reasoning process** to determine the best way to verify the rule before generating the test code.
 
-    - Your final output should **only contain the Java test code** (without explanations), but follow this internal reasoning process before producing the output:
+- Your final output should **only contain the Java test code**, strictly adhering to these rules:
+    - **The test code must always be compatible with Java 7.**  
+    - **You must always instantiate `DesignWizard` exactly as shown in the example.** 
 
-    ## **Reasoning Process**:
+---
 
-    1. **Analyze the Design Rule**  
-    - Carefully read and understand the rule that needs to be enforced.  
-    - Identify what relationships or constraints must be tested.
+## **Reasoning Process**:
 
-    2. **Examine the System Summary (Compiled Class Structure)**  
-    - Use the provided class definitions to **map out** the system structure.
-    - Identify **classes, methods, fields, and inheritance/composition** relationships.
-    - Determine **which classes and methods are relevant** to enforcing the design rule.
+1. **Analyze the Design Rule**  
+   - Carefully read and understand the rule that needs to be enforced.  
+   - Identify what relationships or constraints must be tested.
 
-    3. **Extract Relevant Information from the Documentation**  
-    - Focus only on the **Design Wizard** methods/classes that help enforce the rule.
-    - Identify how Design Wizard can be used to analyze relationships between classes.
+2. **Examine the System Summary (Compiled Class Structure)**  
+   - Use the provided class definitions to **map out** the system structure.
+   - Identify **classes, methods, fields, and inheritance/composition** relationships.
+   - Determine **which classes and methods are relevant** to enforcing the design rule.
 
-    4. **Define the Test Strategy**  
-    - Determine **which classes, methods, or interactions** should be tested.
-    - Decide **which assertions** will verify compliance with the design rule.
+3. **Extract Relevant Information from the Documentation**  
+   - Focus only on the **Design Wizard** methods/classes that help enforce the rule.
+   - Identify how Design Wizard can be used to analyze relationships between classes.
 
-    5. **Generate the Java Test Code**  
-    - Implement the test using **JUnit and Design Wizard**.
-    - Ensure the test correctly verifies adherence to the design rule.
+4. **Define the Test Strategy**  
+   - Determine **which classes, methods, or interactions** should be tested.
+   - Decide **which assertions** will verify compliance with the design rule.
 
-    ## Compiled Class Structure:
+5. **Generate the Java Test Code**  
+   - Implement the test using **JUnit and Design Wizard**, ensuring full compatibility with **Java 7**.
+   - **Always instantiate `DesignWizard` as shown in the example**, using the `"bin"` directory.
+   - Ensure the test correctly verifies adherence to the design rule.
 
-    ```
-    {class_structure}
-    ```
+---
 
-    ## **Example**:
+## **Compiled Class Structure**:
 
-    ### **Input (Design Rule)**:
-    > The `Strategy` pattern requires the context to use the `Strategy` interface,  
-    > so concrete classes should never be referenced directly.
+```
+{class_structure}
+```
 
-    ### **Output (Java Test Code)**:
-    ```java
-    @Test
-    public void testContextOnlyKnowsStrategyInterface() throws Exception {{
-        # You can assume that the directory that contains the .class files is always "bin"
-        DesignWizard dw = new DesignWizard("bin");
-        ClassNode concreateStrategyA = dw.getClass("com.cnblog.clarck.ConcreateStrategyA");
-        ClassNode concreateStrategyB = dw.getClass("com.cnblog.clarck.ConcreateStrategyB");
-        ClassNode concreateStrategyC = dw.getClass("com.cnblog.clarck.ConcreateStrategyC");
-        ClassNode strategyClass = dw.getClass("com.cnblog.clarck.Strategy");
-        ClassNode context = dw.getClass("com.cnblog.clarck.Context");
-        Set<ClassNode> calleeClasses = context.getCalleeClasses();
+## **Example**:
 
-        assertTrue(calleeClasses.contains(strategyClass));
-        assertFalse(calleeClasses.contains(concreateStrategyA));
-        assertFalse(calleeClasses.contains(concreateStrategyB));
-        assertFalse(calleeClasses.contains(concreateStrategyC));
-    }}
-    ```
+### **Input (Design Rule)**:
+> The `Strategy` pattern requires the context to use the `Strategy` interface,  
+> so concrete classes should never be referenced directly.
 
-    In this example, the relevant documentation from **Design Wizard** includes:
-    - How to retrieve a **ClassNode** for a given class.
-    - How to get the **callee classes** of a given class.
+### **Output (Java Test Code)**:
+```java
+@Test
+public void testContextOnlyKnowsStrategyInterface() throws Exception {{
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard("bin");
+    ClassNode concreateStrategyA = dw.getClass("com.cnblog.clarck.ConcreateStrategyA");
+    ClassNode concreateStrategyB = dw.getClass("com.cnblog.clarck.ConcreateStrategyB");
+    ClassNode concreateStrategyC = dw.getClass("com.cnblog.clarck.ConcreateStrategyC");
+    ClassNode strategyClass = dw.getClass("com.cnblog.clarck.Strategy");
+    ClassNode context = dw.getClass("com.cnblog.clarck.Context");
+    Set<ClassNode> calleeClasses = context.getCalleeClasses();
+
+    assertTrue(calleeClasses.contains(strategyClass));
+    assertFalse(calleeClasses.contains(concreateStrategyA));
+    assertFalse(calleeClasses.contains(concreateStrategyB));
+    assertFalse(calleeClasses.contains(concreateStrategyC));
+}}
+```
+
+### **Key Constraints**:
+- **Java 7 Compatibility**: Ensure that the generated code follows **Java 7 syntax and APIs**.
+- **DesignWizard Instantiation**: **Always** create the `DesignWizard` object **exactly as in the example**, using `"bin"` as the class directory.
+- **Extract Information Using DesignWizard**: All relationships, methods, and verifications **must** be derived using `DesignWizard` APIs.
+- **The response must only contain the test case**: 
     """
 
 rules_strategy = [
@@ -96,7 +106,7 @@ rules_strategy = [
     "The Strategy abstract class should define a single method representing the algorithm to be executed, keeping the contract simple and consistent."
 ]
 
-rules_facade = [
+rules = [
     "Only the `Facade` class should directly interact with the subsystems — all other classes must interact exclusively through the `Facade`.",
     "The `Facade` class should be aware of the internal subsystems, but the subsystems should not depend on or have knowledge of the `Facade`.",
     "The internal classes that compose the subsystems must not be directly accessible outside the package — this reinforces the use of the `Facade`.",
@@ -128,7 +138,7 @@ rules_adapter = [
     "Avoid exposing the Adaptee directly to the client, as this breaks encapsulation and defeats the purpose of the Adapter."
 ]
 
-rules = [
+rules_builder = [
     "Each Concrete Builder should extend the Builder abstract class and provide specific implementations for constructing parts of the product.",
     "The product class should be independent of the Builder — the Builder is responsible for assembling the product, but the product doesn’t know about the Builder.",
     "Avoid tightly coupling the Director to a specific Builder — it should only know about the Builder class.",
@@ -137,45 +147,87 @@ rules = [
 ]
 
 class_structure = """
+Compiled from "Test.java"
+public class externalpackage.Test {
+  private com.cnblog.clarck.SubSystemOne one;
+  private com.cnblog.clarck.SubSystemTwo two;
+  private com.cnblog.clarck.SubSystemThree three;
+  private com.cnblog.clarck.SubSystemFour four;
+  public externalpackage.Test();
+}
+Compiled from "Facede.java"
+public class com.cnblog.clarck.Facede {
+  private com.cnblog.clarck.SubSystemOne one;
+  private com.cnblog.clarck.SubSystemTwo two;
+  private com.cnblog.clarck.SubSystemThree three;
+  private com.cnblog.clarck.SubSystemFour four;
+  public com.cnblog.clarck.Facede();
+  public void methodA();
+  public void methodB();
+}
 Compiled from "Client.java"
 public class com.cnblog.clarck.Client {
   public com.cnblog.clarck.Client();
   public static void main(java.lang.String[]);
 }
-Compiled from "Builder.java"
-public abstract class com.cnblog.clarck.Builder {
-  public com.cnblog.clarck.Builder();
-  public abstract void buildPartA();
-  public abstract void buildPartB();
-  public abstract com.cnblog.clarck.Product getResult();
+Compiled from "SubSystemThree.java"
+public class com.cnblog.clarck.SubSystemThree {
+  public com.cnblog.clarck.SubSystemThree();
+  public void methodThree();
 }
-Compiled from "ConcrateBuilder2.java"
-public class com.cnblog.clarck.ConcrateBuilder2 extends com.cnblog.clarck.Builder {
-  private com.cnblog.clarck.Product product;
-  public com.cnblog.clarck.ConcrateBuilder2();
-  public void buildPartA();
-  public void buildPartB();
-  public com.cnblog.clarck.Product getResult();
+Compiled from "SubSystemTwo.java"
+public class com.cnblog.clarck.SubSystemTwo {
+  public com.cnblog.clarck.SubSystemTwo();
+  public void methodTwo();
 }
-Compiled from "Director.java"
-public class com.cnblog.clarck.Director {
-  public com.cnblog.clarck.Director();
-  public void Construct(com.cnblog.clarck.Builder);
+Compiled from "SubSystemOne.java"
+public class com.cnblog.clarck.SubSystemOne {
+  public com.cnblog.clarck.SubSystemOne();
+  public void methodOne();
 }
-Compiled from "Product.java"
-public class com.cnblog.clarck.Product {
-  private java.util.List<java.lang.String> parts;
-  public com.cnblog.clarck.Product();
-  public void add(java.lang.String);
-  public void show();
+Compiled from "SubSystemFour.java"
+public class com.cnblog.clarck.SubSystemFour {
+  public com.cnblog.clarck.SubSystemFour();
+  public void methodFour();
 }
-Compiled from "ConcrateBuilder1.java"
-public class com.cnblog.clarck.ConcrateBuilder1 extends com.cnblog.clarck.Builder {
-  private com.cnblog.clarck.Product product;
-  public com.cnblog.clarck.ConcrateBuilder1();
-  public void buildPartA();
-  public void buildPartB();
-  public com.cnblog.clarck.Product getResult();
+Compiled from "Test.java"
+public class externalpackage.Test {
+  public externalpackage.Test();
+}
+Compiled from "Facede.java"
+public class com.cnblog.clarck.Facede {
+  private com.cnblog.clarck.SubSystemOne one;
+  private com.cnblog.clarck.SubSystemTwo two;
+  private com.cnblog.clarck.SubSystemThree three;
+  private com.cnblog.clarck.SubSystemFour four;
+  public com.cnblog.clarck.Facede();
+  public void methodA();
+  public void methodB();
+}
+Compiled from "Client.java"
+public class com.cnblog.clarck.Client {
+  public com.cnblog.clarck.Client();
+  public static void main(java.lang.String[]);
+}
+Compiled from "SubSystemThree.java"
+public class com.cnblog.clarck.SubSystemThree {
+  public com.cnblog.clarck.SubSystemThree();
+  public void methodThree();
+}
+Compiled from "SubSystemTwo.java"
+public class com.cnblog.clarck.SubSystemTwo {
+  public com.cnblog.clarck.SubSystemTwo();
+  public void methodTwo();
+}
+Compiled from "SubSystemOne.java"
+public class com.cnblog.clarck.SubSystemOne {
+  public com.cnblog.clarck.SubSystemOne();
+  public void methodOne();
+}
+Compiled from "SubSystemFour.java"
+public class com.cnblog.clarck.SubSystemFour {
+  public com.cnblog.clarck.SubSystemFour();
+  public void methodFour();
 }
 """ 
 system_prompt = get_system_prompt(class_structure)
@@ -183,13 +235,13 @@ system_prompt = get_system_prompt(class_structure)
 ##### SETUP LLM #####
 Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-large-en-v1.5")
 # Settings.llm = Groq(
-#     model="llama3-70b-8192",
-    # system_prompt=system_prompt   
+#   model="llama3-70b-8192",
+#   system_prompt=system_prompt   
 # )
 
 Settings.llm = MistralAI(
     model="codestral-latest",
-    temperature=0.1,
+    temperature=0,
     system_prompt=system_prompt 
 )
 
@@ -220,7 +272,7 @@ hybrid_query_engine = hybrid_index.as_query_engine(
 )
 
 date_now = datetime.now().strftime('%Y%m%d_%H%M%S')
-output_file = f"saida-{date_now}.txt"
+output_file = f"output/saida-{date_now}.txt"
 
 with open(output_file, "w") as f:
     pass
@@ -231,16 +283,16 @@ for rule in rules:
     hybrid_response = hybrid_query_engine.query(rule)
 
     print("\nRESPOSTA DO LLM:")
-    print("-" * 80)  # Linha separadora
-    print(str(hybrid_response))
-    print("-" * 80)  # Linha separadora
+    print("-" * 80)
+    print(hybrid_response)
+    print("-" * 80)
     print("\n")
     
     with open(output_file, "a") as f:
         f.write("-" * 60)
         f.write(f"\nRESPOSTA PARA REGRA {rule}\n")
         f.write("-" * 60)
-        f.write(f"\n{str(hybrid_response)}\n\n\n\n")
+        f.write(f"\n{hybrid_response}\n\n\n\n")
         
 
     time.sleep(30)
