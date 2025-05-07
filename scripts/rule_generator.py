@@ -1,7 +1,8 @@
-import openai
+from openai import OpenAI
 import os
+import dotenv
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+dotenv.load_dotenv()
 
 prompt = """
 Generate a set of sentences that define design rules for the **Builder pattern**, similar to the examples below. These rules should describe structural and behavioral constraints, focusing on:
@@ -18,12 +19,13 @@ Generate a set of sentences that define design rules for the **Builder pattern**
 
 Generate additional sentences following this format, ensuring they clearly define the structure and rules of the **Builder pattern**.
 """
+client = OpenAI()
 
-response = openai.ChatCompletion.create(
+completion = client.chat.completions.create(
     model="gpt-4",
     messages=[
         {"role": "user", "content": prompt}
     ]
 )
 
-print(response['choices'][0]['message']['content'])
+print(completion['choices'][0]['message']['content'])
