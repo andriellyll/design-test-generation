@@ -1,0 +1,33 @@
+ID,Texto,Classificação sobre o que a regra define,Classificação nível dificuldade,,
+1,Each strategy must implement the `algorithmInterface` method defined in the abstract class.,"- Verificação de presença/ausência de um método
+- Verificação de relação entre uma dupla classes",2,,14
+2,"The `Strategy` abstract class was designed to be stateless, so avoid adding state attributes to its implementations.",- Verificação de presença/ausência de campos/atributos,1,,12
+3,The concrete class needs to extend the `Strategy` abstract class to ensure that the `algorithmInterface` method adheres to the defined contract.,- Verificação de relação entre uma dupla declasses,1,,4
+4,Each concrete implementation must encapsulate a single algorithm and be completely independent of the other strategies.,- Verificação da presença/ausência de relação entre múltiplas classes,2,,
+5,"The Strategy abstract class should define a single method representing the algorithm to be executed, keeping the contract simple and consistent.",- Verificação de presença/ausência de múltiplos métodos,1,,
+6,Only the `Facade` class should directly interact with the subsystems — all other classes must interact exclusively through the `Facade`.,- Verificação da presença/ausência de relação entre múltiplas classes,2,,
+7,"The `Facade` class should be aware of the internal subsystems, but the subsystems should not depend on or have knowledge of the `Facade`.",- Verificação da presença/ausência de relação entre múltiplas classes,2,,
+8,The internal classes that compose the subsystems must not be directly accessible outside the package — this reinforces the use of the `Facade`.,- Verificação de presença de relação entre múltiplas classes e um pacote,2,,
+9,"A Facade should be implemented as a concrete class, not an interface, since it represents a fixed entry point to a subsystem.",- Verificação de propriedade de uma classe,1,,
+10,"The Facade should only expose methods necessary for client interactions, keeping its API minimal to reduce coupling.",- Verificação de propriedade de múltiplos métodos,2,,
+11,All objects created by the `Simple Factory` must implement or inherit from a common interface or base class.,- Verificação da presença/ausência de relação entre múltiplas classes,2,,
+12,The client must call the `Simple Factory` to create objects and not use the `new` operator directly.,- Verificação da presença/ausência de relação entre uma classe e um método,3,,
+13,The factory class must not store created instances.,- Verificação de presença/ausência de campos/atributos,1,,
+14,"Each product class should be independent and unaware of the factory, ensuring that modifications to the factory do not affect product implementations.",- Verificação da presença/ausência de relação entre múltiplas classes,2,,
+15,The factory method should return instances of concrete product classes but expose them only through their common interface or superclass.,- Verificação do retorno de um método,3,,
+16,"Every component, whether it’s a leaf or a composite, must extend the Component abstract class to ensure consistent behavior.",- Verificação da presença/ausência de relação entre múltiplas classes,1,,
+17,Make sure the leaf nodes don’t have any children — their methods should operate as if they are the end of the hierarchy.,- Verificação de presença/ausência de campos/atributos,1,,
+18,"Instead of exposing direct references to child nodes, the composite should provide methods to manage children, like add, remove, or getChild.",- Verificação de presença/ausência de múltiplos métodos,3,,
+19,"Leaf nodes must not contain references to other components, as they represent indivisible elements in the hierarchy.",- Verificação da presença/ausência de relação entre uma duplas classes,2,,
+20,Avoid introducing direct dependencies between Composite and concrete Leaf implementations to preserve flexibility when extending the hierarchy.,- Verificação da presença/ausência de relação entre uma duplas classes,1,,
+21,The Adapter class must extend the target class so the client can interact with it seamlessly.,- Verificação da presença/ausência de relação entre uma duplas classes,1,,
+22,"Use composition instead of inheritance in the Adapter to wrap the adaptee, keeping the two classes loosely coupled.",- Verificação da presença/ausência de relação entre uma duplas classes,1,,
+23,"The Adapter should expose only the methods defined in the target class, even if the adaptee has additional functionality.",- Verificação de presença/ausência de múltiplos métodos,2,,
+24,"The Adapter should delegate all calls to the Adaptee, converting method signatures and data formats as needed.",- Múltiplas verificações da presença/ausência de relação entre método e classe,3,,
+25,"Avoid exposing the Adaptee directly to the client, as this breaks encapsulation and defeats the purpose of the Adapter.",- Verificação da presença/ausência de relação entre uma duplas classes,1,,
+26,Each Concrete Builder should extend the Builder abstract class and provide specific implementations for constructing parts of the product.,"- Verificação da presença/ausência de relação entre uma duplas classes
+- Verificação de presença/ausência de múltiplos métodos",2,,
+27,"The product class should be independent of the Builder — the Builder is responsible for assembling the product, but the product doesn’t know about the Builder.",- Verificação da presença/ausência de relação entre uma duplas classes,1,,
+28,Avoid tightly coupling the Director to a specific Builder — it should only know about the Builder class.,- Múltiplas verificações da presença/ausência de relação entre duas classes,1,,
+29,"The final product should only be accessible through a getResult() method, preventing incomplete object creation.",- Múltiplas verificações da presença/ausência de relação entre método e classe,2,,
+30,The Builder and the Product class should be placed in the same package to restrict direct instantiation while allowing controlled access.,- Verificação de relação entre pacotes,1,,

@@ -1,0 +1,668 @@
+ID,Resposta,Executa?,Asserts passam?,O que há de errado?,Inventou algum método da biblioteca?,Fez sentido?,Usou bem (corretamente) os métodos que não foram inventados,Está de acordo com a regra?,Está completa?,,,,
+1,"@Test
+public void testStrategyImplementsAlgorithmInterface() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode strategyClass = dw.getClass(""com.cnblog.clarck.Strategy"");
+    ClassNode concreateStrategyA = dw.getClass(""com.cnblog.clarck.ConcreateStrategyA"");
+    ClassNode concreateStrategyB = dw.getClass(""com.cnblog.clarck.ConcreateStrategyB"");
+    ClassNode concreateStrategyC = dw.getClass(""com.cnblog.clarck.ConcreateStrategyC"");
+
+    MethodNode algorithmInterfaceMethod = strategyClass.getDeclaredMethod(""algorithmInterface()"");
+
+    assertNotNull(algorithmInterfaceMethod);
+    assertTrue(concreateStrategyA.getAllMethods().contains(algorithmInterfaceMethod));
+    assertTrue(concreateStrategyB.getAllMethods().contains(algorithmInterfaceMethod));
+    assertTrue(concreateStrategyC.getAllMethods().contains(algorithmInterfaceMethod));
+}",Sim,Sim,"- Deveria ter verificado se o método estava declarado nas classes. Em vez disso, verificou se o método herdado é que estava",Não,Não,Sim,Não,Não,,,,
+2,"@Test
+public void testStrategyImplementationsAreStateless() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Strategy class
+    ClassNode strategyClass = dw.getClass(""com.cnblog.clarck.Strategy"");
+
+    // Get all subclasses of Strategy
+    Set<ClassNode> subclasses = strategyClass.getSubclasses();
+
+    // Iterate over each subclass and check for fields
+    for (ClassNode subclass : subclasses) {
+        // Get all fields of the subclass
+        Set<FieldNode> fields = subclass.getFields();
+
+        // Assert that there are no fields (i.e., the subclass is stateless)
+        assertTrue(""Class "" + subclass.getName() + "" should be stateless"", fields.isEmpty());
+    }
+}",Não,Sim,"- Errou nome dos métodos do DesignWizard: em vez de getSubClasses, colocou getSubclasses e em vez de getAllFields, colocou getFields",Sim,Sim,Sim,Sim,Sim,,,,
+3,"@Test
+public void testConcreteClassesExtendStrategy() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Strategy class
+    ClassNode strategyClass = dw.getClass(""com.cnblog.clarck.Strategy"");
+
+    // Get the concrete classes
+    ClassNode concreateStrategyA = dw.getClass(""com.cnblog.clarck.ConcreateStrategyA"");
+    ClassNode concreateStrategyB = dw.getClass(""com.cnblog.clarck.ConcreateStrategyB"");
+    ClassNode concreateStrategyC = dw.getClass(""com.cnblog.clarck.ConcreateStrategyC"");
+
+    // Verify that each concrete class extends the Strategy class
+    assertTrue(concreateStrategyA.extendsClass(strategyClass));
+    assertTrue(concreateStrategyB.extendsClass(strategyClass));
+    assertTrue(concreateStrategyC.extendsClass(strategyClass));
+
+    // Verify that each concrete class implements the algorithmInterface method
+    MethodNode algorithmInterfaceMethod = strategyClass.getDeclaredMethod(""algorithmInterface()"");
+    assertNotNull(algorithmInterfaceMethod);
+
+    assertTrue(concreateStrategyA.getAllMethods().contains(algorithmInterfaceMethod));
+    assertTrue(concreateStrategyB.getAllMethods().contains(algorithmInterfaceMethod));
+    assertTrue(concreateStrategyC.getAllMethods().contains(algorithmInterfaceMethod));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+4,"@Test
+public void testConcreteStrategiesAreIndependent() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the concrete strategy classes
+    ClassNode concreateStrategyA = dw.getClass(""com.cnblog.clarck.ConcreateStrategyA"");
+    ClassNode concreateStrategyB = dw.getClass(""com.cnblog.clarck.ConcreateStrategyB"");
+    ClassNode concreateStrategyC = dw.getClass(""com.cnblog.clarck.ConcreateStrategyC"");
+
+    // Get the strategy interface
+    ClassNode strategyClass = dw.getClass(""com.cnblog.clarck.Strategy"");
+
+    // Get the callee classes for each concrete strategy
+    Set<ClassNode> calleeClassesA = concreateStrategyA.getCalleeClasses();
+    Set<ClassNode> calleeClassesB = concreateStrategyB.getCalleeClasses();
+    Set<ClassNode> calleeClassesC = concreateStrategyC.getCalleeClasses();
+
+    // Ensure that each concrete strategy only references the Strategy interface
+    assertTrue(calleeClassesA.contains(strategyClass));
+    assertFalse(calleeClassesA.contains(concreateStrategyB));
+    assertFalse(calleeClassesA.contains(concreateStrategyC));
+
+    assertTrue(calleeClassesB.contains(strategyClass));
+    assertFalse(calleeClassesB.contains(concreateStrategyA));
+    assertFalse(calleeClassesB.contains(concreateStrategyC));
+
+    assertTrue(calleeClassesC.contains(strategyClass));
+    assertFalse(calleeClassesC.contains(concreateStrategyA));
+    assertFalse(calleeClassesC.contains(concreateStrategyB));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+5,"@Test
+public void testStrategyDefinesSingleAlgorithmMethod() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode strategyClass = dw.getClass(""com.cnblog.clarck.Strategy"");
+
+    // Get all methods of the Strategy class
+    Set<MethodNode> methods = strategyClass.getAllMethods();
+
+    // Filter out non-abstract methods
+    Set<MethodNode> abstractMethods = new HashSet<>();
+    for (MethodNode method : methods) {
+        if (method.isAbstract()) {
+            abstractMethods.add(method);
+        }
+    }
+
+    // Assert that there is exactly one abstract method
+    assertEquals(1, abstractMethods.size());
+
+    // Optionally, assert the name of the method if it's known
+    MethodNode algorithmMethod = abstractMethods.iterator().next();
+    assertEquals(""algorithmInterface"", algorithmMethod.getShortName());
+}",Sim,Não,"- Errou o shortName do método. Precisa colocar parênteses. Em vez de algorithmInterface, tinha que colocar algorithmInterface()",Não,Sim,Não,Sim,Sim,,,,
+6,"@Test
+public void testFacadeInteractsWithSubsystems() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode facade = dw.getClass(""com.cnblog.clarck.Facede"");
+    ClassNode subsystemOne = dw.getClass(""com.cnblog.clarck.SubSystemOne"");
+    ClassNode subsystemTwo = dw.getClass(""com.cnblog.clarck.SubSystemTwo"");
+    ClassNode subsystemThree = dw.getClass(""com.cnblog.clarck.SubSystemThree"");
+    ClassNode subsystemFour = dw.getClass(""com.cnblog.clarck.SubSystemFour"");
+    ClassNode client = dw.getClass(""com.cnblog.clarck.Client"");
+
+    Set<ClassNode> facadeCalleeClasses = facade.getCalleeClasses();
+    Set<ClassNode> clientCalleeClasses = client.getCalleeClasses();
+
+    assertTrue(facadeCalleeClasses.contains(subsystemOne));
+    assertTrue(facadeCalleeClasses.contains(subsystemTwo));
+    assertTrue(facadeCalleeClasses.contains(subsystemThree));
+    assertTrue(facadeCalleeClasses.contains(subsystemFour));
+
+    assertFalse(clientCalleeClasses.contains(subsystemOne));
+    assertFalse(clientCalleeClasses.contains(subsystemTwo));
+    assertFalse(clientCalleeClasses.contains(subsystemThree));
+    assertFalse(clientCalleeClasses.contains(subsystemFour));
+}",Sim,Sim,"- Poderia ter deixado mais escalável. Apenas verificou se o cliente não chamava os subsistemas. Mas outra classe de cliente poderia chamar e os testes não detectariam
+
+- Nada",Não,Sim,Sim,Sim,Sim,,,,
+7,"@Test
+public void testFacadeAwarenessAndSubsystemIndependence() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Facade class
+    ClassNode facade = dw.getClass(""com.cnblog.clarck.Facede"");
+
+    // Get the subsystem classes
+    ClassNode subSystemOne = dw.getClass(""com.cnblog.clarck.SubSystemOne"");
+    ClassNode subSystemTwo = dw.getClass(""com.cnblog.clarck.SubSystemTwo"");
+    ClassNode subSystemThree = dw.getClass(""com.cnblog.clarck.SubSystemThree"");
+    ClassNode subSystemFour = dw.getClass(""com.cnblog.clarck.SubSystemFour"");
+
+    // Get the classes that the Facade calls
+    Set<ClassNode> facadeCalleeClasses = facade.getCalleeClasses();
+
+    // Assert that the Facade is aware of the subsystems
+    assertTrue(facadeCalleeClasses.contains(subSystemOne));
+    assertTrue(facadeCalleeClasses.contains(subSystemTwo));
+    assertTrue(facadeCalleeClasses.contains(subSystemThree));
+    assertTrue(facadeCalleeClasses.contains(subSystemFour));
+
+    // Get the classes that call the subsystems
+    Set<ClassNode> subSystemOneCallerClasses = subSystemOne.getCallerClasses();
+    Set<ClassNode> subSystemTwoCallerClasses = subSystemTwo.getCallerClasses();
+    Set<ClassNode> subSystemThreeCallerClasses = subSystemThree.getCallerClasses();
+    Set<ClassNode> subSystemFourCallerClasses = subSystemFour.getCallerClasses();
+
+    // Assert that the subsystems do not reference the Facade
+    assertFalse(subSystemOneCallerClasses.contains(facade));
+    assertFalse(subSystemTwoCallerClasses.contains(facade));
+    assertFalse(subSystemThreeCallerClasses.contains(facade));
+    assertFalse(subSystemFourCallerClasses.contains(facade));
+}",Sim,Não,"- Se confundiu com callee e caller. O teste verifica se, dentre as classes chamadoras dos subsistemas, o facade não está. Mas deveria verificar entre as classes chamadas",Não,Não,Não,Não,Não,,,,
+8,"@Test
+public void testSubsystemClassesNotAccessibleOutsidePackage() throws Exception {
+    DesignWizard dw = new DesignWizard(""bin"");
+    PackageNode subsystemPackage = dw.getPackage(""com.cnblog.clarck"");
+    Set<ClassNode> callerClasses = subsystemPackage.getCallerClasses();
+
+    assertTrue(callerClasses.contains(dw.getClass(""com.cnblog.clarck.Facede"")));
+    assertFalse(callerClasses.contains(dw.getClass(""com.cnblog.clarck.SubSystemOne"")));
+    assertFalse(callerClasses.contains(dw.getClass(""com.cnblog.clarck.SubSystemTwo"")));
+    assertFalse(callerClasses.contains(dw.getClass(""com.cnblog.clarck.SubSystemThree"")));
+    assertFalse(callerClasses.contains(dw.getClass(""com.cnblog.clarck.SubSystemFour"")));
+}",Sim,Sim,"- Não fez sentido. Verificou se os subsistemas não estavam entre as classes chamadoras do pacote, mas deveria verificar se as classes chamadoras dos subsistemas estavam dentro do pacote",Não,Não,Sim,Não,Não,,,,
+9,"@Test
+public void testFacadeIsConcreteClass() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode facadeClass = dw.getClass(""com.cnblog.clarck.Facede"");
+
+    // Verify that the Facade class is not an interface
+    assertFalse(facadeClass.isInterface());
+
+    // Verify that the Facade class is a concrete class
+    assertTrue(facadeClass.isClass());
+
+    // Verify that the Facade class has concrete methods
+    Set<MethodNode> methods = facadeClass.getDeclaredMethods();
+    assertFalse(methods.isEmpty());
+
+    for (MethodNode method : methods) {
+        assertFalse(method.isAbstract());
+    }
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+10,"@Test
+public void testFacadeExposesOnlyNecessaryMethods() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Facade class
+    ClassNode facadeClass = dw.getClass(""com.cnblog.clarck.Facede"");
+
+    // Get all methods of the Facade class
+    Set<MethodNode> allMethods = facadeClass.getAllMethods();
+
+    // Define the set of methods that are necessary for client interactions
+    Set<String> necessaryMethods = new HashSet<String>();
+    necessaryMethods.add(""methodA"");
+    necessaryMethods.add(""methodB"");
+
+    // Check that only necessary methods are exposed
+    for (MethodNode method : allMethods) {
+        String methodName = method.getShortName();
+        assertTrue(""Method "" + methodName + "" should be necessary for client interactions"",
+                   necessaryMethods.contains(methodName));
+    }
+}",Sim,Não,"- Não usou a assinatura correta dos métodos (esqueceu de colocar os paranteses em methodA())
+- Não colocou o construtor como método importante/necessário",Não,Sim,Não,Sim,Não,,,,
+11,"@Test
+public void testSimpleFactoryCreatesObjectsFromCommonInterface() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the factory class
+    ClassNode factoryClass = dw.getClass(""com.cnblog.clarck.ProductFactory"");
+
+    // Get the common interface or base class
+    ClassNode commonInterface = dw.getClass(""com.cnblog.clarck.Product"");
+
+    // Get all methods in the factory class that create objects
+    Set<MethodNode> factoryMethods = factoryClass.getAllMethodsThatReturn(commonInterface.getClassName());
+
+    // Iterate through each method and check if the returned objects implement or inherit from the common interface
+    for (MethodNode method : factoryMethods) {
+        ClassNode returnType = method.getReturnType();
+        assertTrue(returnType.implementsInterface(commonInterface) || returnType.extendsClass(commonInterface));
+    }
+}",Sim,Não,- Confusão sobre o DesignWizard e Java mesmo. Ele pegou os métodos que retornavam Product e verificou se o retorno desses métodos implementavam a própria classe Product,Não,Não,Sim,Sim,Sim,,,,
+12,"@Test
+public void testClientUsesFactoryToCreateObjects() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the classes representing the products and the factory
+    ClassNode productA = dw.getClass(""com.cnblog.clarck.ProductA"");
+    ClassNode productB = dw.getClass(""com.cnblog.clarck.ProductB"");
+    ClassNode productFactory = dw.getClass(""com.cnblog.clarck.ProductFactory"");
+
+    // Get the class representing the client (assuming it's named Test)
+    ClassNode client = dw.getClass(""com.cnblog.clarck.Test"");
+
+    // Get the methods called by the client
+    Set<MethodNode> calledMethods = client.getCalleeMethods();
+
+    // Check if the client calls the factory to create products
+    boolean callsFactory = false;
+    for (MethodNode method : calledMethods) {
+        if (method.getDeclaringClass().equals(productFactory)) {
+            callsFactory = true;
+            break;
+        }
+    }
+
+    // Assert that the client calls the factory and does not directly instantiate products
+    assertTrue(""Client should call the factory to create objects"", callsFactory);
+    assertFalse(""Client should not directly instantiate ProductA"", calledMethods.contains(productA.getConstructors()));
+    assertFalse(""Client should not directly instantiate ProductB"", calledMethods.contains(productB.getConstructors()));
+}",Sim,Não,"- Confusão sobre o DesignWizard. Chamou o getCalleeMethods para pegar os métodos da factory que o cliente chama, mas quando fez o method.getDeclaringClass pra o método de print que o cliente chama, esse getDeclaringClass retorna null (restrição do DesignWizard).",Não,Sim,Não,Sim,Sim,,,,
+13,"@Test
+public void testFactoryDoesNotStoreInstances() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the factory class
+    ClassNode factoryClass = dw.getClass(""com.cnblog.clarck.ProductFactory"");
+
+    // Get all fields of the factory class
+    Set<FieldNode> fields = factoryClass.getAllFields();
+
+    // Assert that there are no fields that store instances of created objects
+    for (FieldNode field : fields) {
+        ClassNode fieldType = field.getType();
+        assertFalse(fieldType.getClassName().startsWith(""com.cnblog.clarck.Product""));
+    }
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+14,"@Test
+public void testProductClassesAreIndependentOfFactory() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the ProductFactory class
+    ClassNode productFactory = dw.getClass(""com.cnblog.clarck.ProductFactory"");
+
+    // Get the ProductA and ProductB classes
+    ClassNode productA = dw.getClass(""com.cnblog.clarck.ProductA"");
+    ClassNode productB = dw.getClass(""com.cnblog.clarck.ProductB"");
+
+    // Get the classes that ProductA and ProductB call
+    Set<ClassNode> productACalleeClasses = productA.getCalleeClasses();
+    Set<ClassNode> productBCalleeClasses = productB.getCalleeClasses();
+
+    // Assert that ProductA and ProductB do not call ProductFactory
+    assertFalse(productACalleeClasses.contains(productFactory));
+    assertFalse(productBCalleeClasses.contains(productFactory));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+15,"@Test
+public void testFactoryMethodReturnsConcreteProductsThroughCommonInterface() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the ProductFactory class
+    ClassNode productFactoryClass = dw.getClass(""com.cnblog.clarck.ProductFactory"");
+
+    // Get the Product interface or superclass
+    ClassNode productClass = dw.getClass(""com.cnblog.clarck.Product"");
+
+    // Get the concrete product classes
+    ClassNode productAClass = dw.getClass(""com.cnblog.clarck.ProductA"");
+    ClassNode productBClass = dw.getClass(""com.cnblog.clarck.ProductB"");
+
+    // Get the method that creates products
+    MethodNode createProductMethod = productFactoryClass.getDeclaredMethod(""createProduct(com.cnblog.clarck.ProductType)"");
+
+    // Get the classes that are referenced by the createProduct method
+    Set<ClassNode> calleeClasses = createProductMethod.getCalleeClasses();
+
+    // Assert that the createProduct method only references the Product interface or superclass
+    assertTrue(calleeClasses.contains(productClass));
+    assertFalse(calleeClasses.contains(productAClass));
+    assertFalse(calleeClasses.contains(productBClass));
+}",Sim,Não,"- Não fez sentido. Verificou se o método createProduct não chamava as classes concretas do produto mas chamava o Product. Deveria fazer essa verificação para o retorno, não para as chamads.",Não,Não,Sim,Não,Não,,,,
+16,"@Test
+public void testAllComponentsExtendComponent() throws Exception {
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode componentClass = dw.getClass(""com.cnblog.clarck.Component"");
+    ClassNode leafClass = dw.getClass(""com.cnblog.clarck.Leaf"");
+    ClassNode compositeClass = dw.getClass(""com.cnblog.clarck.Composite"");
+
+    assertTrue(leafClass.extendsClass(componentClass));
+    assertTrue(compositeClass.extendsClass(componentClass));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+17,"@Test
+public void testLeafNodesHaveNoChildren() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Leaf class
+    ClassNode leafClass = dw.getClass(""com.cnblog.clarck.Leaf"");
+
+    // Get the add and remove methods
+    MethodNode addMethod = leafClass.getDeclaredMethod(""add(com.cnblog.clarck.Component)"");
+    MethodNode removeMethod = leafClass.getDeclaredMethod(""remove(com.cnblog.clarck.Component)"");
+
+    // Check that the add method does not call any methods on other classes
+    Set<MethodNode> addCalleeMethods = addMethod.getCalleeMethods();
+    assertTrue(addCalleeMethods.isEmpty());
+
+    // Check that the remove method does not call any methods on other classes
+    Set<MethodNode> removeCalleeMethods = removeMethod.getCalleeMethods();
+    assertTrue(removeCalleeMethods.isEmpty());
+
+    // Check that the add method does not modify any fields
+    Set<FieldNode> addAccessedFields = addMethod.getAccessedFields();
+    assertTrue(addAccessedFields.isEmpty());
+
+    // Check that the remove method does not modify any fields
+    Set<FieldNode> removeAccessedFields = removeMethod.getAccessedFields();
+    assertTrue(removeAccessedFields.isEmpty());
+}",Sim,Não,"- Se confundiu pelo fato de a classe Leaf ter métodos de add e remove children. Mas não fez sentido a abordagem utilizada. Verificou se o métodos de add e remove não chamavam nenhuma outra classe e não acessavam nenhum outro field. Mas isso nunca vai ser verdade porque os métodos tem print, ou seja, vão chamar a classe de System e vão acessar o field System.out",Não,Não,Não,Não,Não,,,,
+18,"@Test
+public void testCompositeManagesChildren() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Composite class
+    ClassNode compositeClass = dw.getClass(""com.cnblog.clarck.Composite"");
+
+    // Get the methods of the Composite class
+    Set<MethodNode> methods = compositeClass.getDeclaredMethods();
+
+    // Check if the Composite class provides methods to manage children
+    boolean hasAddMethod = false;
+    boolean hasRemoveMethod = false;
+
+    for (MethodNode method : methods) {
+        if (method.getShortName().equals(""add"")) {
+            hasAddMethod = true;
+        }
+        if (method.getShortName().equals(""remove"")) {
+            hasRemoveMethod = true;
+        }
+    }
+
+    // Assert that the Composite class has methods to add and remove children
+    assertTrue(""Composite class should have an add method"", hasAddMethod);
+    assertTrue(""Composite class should have a remove method"", hasRemoveMethod);
+
+    // Check if the Composite class exposes direct references to child nodes
+    FieldNode childrenField = compositeClass.getField(""children"");
+    assertNotNull(""Composite class should have a children field"", childrenField);
+
+    // Check the visibility of the children field
+    Modifier visibility = childrenField.getVisibility();
+    assertEquals(""Children field should be private"", Modifier.PRIVATE, visibility);
+}",Sim,Não,- Não colocou o nome completo do método (com assinatura),Não,Sim,Não,Sim,Sim,,,,
+19,"@Test
+public void testLeafNodesDoNotReferenceOtherComponents() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Leaf class node
+    ClassNode leafClass = dw.getClass(""com.cnblog.clarck.Leaf"");
+
+    // Get the Component class node
+    ClassNode componentClass = dw.getClass(""com.cnblog.clarck.Component"");
+
+    // Get all methods in the Leaf class
+    Set<MethodNode> leafMethods = leafClass.getAllMethods();
+
+    // Iterate through each method in the Leaf class
+    for (MethodNode method : leafMethods) {
+        // Get the classes that are referenced by this method
+        Set<ClassNode> calleeClasses = method.getCalleeClasses();
+
+        // Assert that the Leaf class does not reference the Component class
+        assertFalse(calleeClasses.contains(componentClass));
+    }
+}",Sim,Não,- Deveria ter verificado apenas para Composite em vez de Component. A Leaf precisa chamar o Component pra chamar o construtor,Não,Não,Sim,Não,Não,,,,
+20,"@Test
+public void testCompositeDoesNotDependOnConcreteLeaf() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Composite class
+    ClassNode compositeClass = dw.getClass(""com.cnblog.clarck.Composite"");
+
+    // Get the concrete Leaf class
+    ClassNode leafClass = dw.getClass(""com.cnblog.clarck.Leaf"");
+
+    // Get all classes that the Composite class calls
+    Set<ClassNode> calleeClasses = compositeClass.getCalleeClasses();
+
+    // Assert that the Composite class does not directly call the Leaf class
+    assertFalse(calleeClasses.contains(leafClass));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+21,"@Test
+public void testAdapterExtendsTarget() throws Exception {
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode adapter = dw.getClass(""com.cnblog.clarck.Adapter"");
+    ClassNode target = dw.getClass(""com.cnblog.clarck.Target"");
+
+    assertTrue(adapter.extendsClass(target));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+22,"@Test
+public void testAdapterUsesCompositionInsteadOfInheritance() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode adapterClass = dw.getClass(""com.cnblog.clarck.Adapter"");
+    ClassNode adapteeClass = dw.getClass(""com.cnblog.clarck.Adaptee"");
+    ClassNode targetClass = dw.getClass(""com.cnblog.clarck.Target"");
+
+    // Check if Adapter extends Target
+    assertFalse(adapterClass.extendsClass(targetClass));
+
+    // Check if Adapter has a field of type Adaptee
+    Set<FieldNode> fields = adapterClass.getDeclaredFields();
+    boolean hasAdapteeField = false;
+    for (FieldNode field : fields) {
+        if (field.getType().equals(adapteeClass)) {
+            hasAdapteeField = true;
+            break;
+        }
+    }
+    assertTrue(hasAdapteeField);
+}",Sim,Não,"- Verificou se o Adapter NAO estende o Target, mas tem que estender. Em nenhum momento a regra falou de target. Mas o resto tá correto",Não,Não,Sim,Não,Não,,,,
+23,"@Test
+public void testAdapterOnlyExposesTargetMethods() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the ClassNode objects for the Adapter, Target, and Adaptee classes
+    ClassNode adapterClass = dw.getClass(""com.cnblog.clarck.Adapter"");
+    ClassNode targetClass = dw.getClass(""com.cnblog.clarck.Target"");
+    ClassNode adapteeClass = dw.getClass(""com.cnblog.clarck.Adaptee"");
+
+    // Get the methods defined in the Adapter class
+    Set<MethodNode> adapterMethods = adapterClass.getDeclaredMethods();
+
+    // Get the methods defined in the Target class
+    Set<MethodNode> targetMethods = targetClass.getDeclaredMethods();
+
+    // Get the methods defined in the Adaptee class
+    Set<MethodNode> adapteeMethods = adapteeClass.getDeclaredMethods();
+
+    // Check that the Adapter class only exposes methods defined in the Target class
+    for (MethodNode method : adapterMethods) {
+        assertTrue(""Adapter method "" + method.getShortName() + "" should be defined in Target class"",
+                   targetMethods.contains(method));
+        assertFalse(""Adapter method "" + method.getShortName() + "" should not be defined in Adaptee class"",
+                    adapteeMethods.contains(method));
+    }
+}",Sim,Não,"- Confusão sobre o Design Wizard. Ele tá considerando que os métodos herdados e declarados são os mesmos, mas mesmo que seja um método sobrescrito, vai ser diferente do método da classe pai",Não,Não,Não,Sim,Não,,,,
+24,"@Test
+public void testAdapterDelegatesCallsToAdaptee() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Adapter and Adaptee classes
+    ClassNode adapterClass = dw.getClass(""com.cnblog.clarck.Adapter"");
+    ClassNode adapteeClass = dw.getClass(""com.cnblog.clarck.Adaptee"");
+
+    // Get the methods of the Adapter class
+    Set<MethodNode> adapterMethods = adapterClass.getDeclaredMethods();
+
+    // Check if each method in the Adapter class calls a method in the Adaptee class
+    for (MethodNode adapterMethod : adapterMethods) {
+        Set<MethodNode> calleeMethods = adapterMethod.getCalleeMethods();
+        boolean delegatesToAdaptee = false;
+
+        for (MethodNode calleeMethod : calleeMethods) {
+            if (calleeMethod.getDeclaringClass().equals(adapteeClass)) {
+                delegatesToAdaptee = true;
+                break;
+            }
+        }
+
+        assertTrue(""Adapter method "" + adapterMethod.getShortName() + "" should delegate to Adaptee"", delegatesToAdaptee);
+    }
+}",Sim,Sim,- Passou mas possivelmente dá um erro se o adapter chamar qualquer outra classe tipo uma utilitária do Java. Pelos mesmos motivos do getDeclaringClass,Não,Sim,Não,Sim,Sim,,,,
+25,"@Test
+public void testClientDoesNotExposeAdapteeDirectly() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the ClassNode objects for Client, Adapter, and Adaptee
+    ClassNode clientClass = dw.getClass(""com.cnblog.clarck.Client"");
+    ClassNode adapterClass = dw.getClass(""com.cnblog.clarck.Adapter"");
+    ClassNode adapteeClass = dw.getClass(""com.cnblog.clarck.Adaptee"");
+
+    // Get the methods of the Client class
+    Set<MethodNode> clientMethods = clientClass.getDeclaredMethods();
+
+    // Check if any method in the Client class references the Adaptee class
+    for (MethodNode method : clientMethods) {
+        Set<ClassNode> calleeClasses = method.getCalleeClasses();
+        assertFalse(""Client should not directly reference Adaptee"", calleeClasses.contains(adapteeClass));
+    }
+
+    // Ensure that the Client class only references the Adapter class
+    Set<ClassNode> clientCalleeClasses = clientClass.getCalleeClasses();
+    assertTrue(""Client should reference Adapter"", clientCalleeClasses.contains(adapterClass));
+    assertFalse(""Client should not directly reference Adaptee"", clientCalleeClasses.contains(adapteeClass));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+26,"@Test
+public void testConcreteBuildersExtendBuilderAndImplementMethods() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the Builder abstract class
+    ClassNode builderClass = dw.getClass(""com.cnblog.clarck.Builder"");
+
+    // Get the Concrete Builder classes
+    ClassNode concreteBuilder1 = dw.getClass(""com.cnblog.clarck.ConcrateBuilder1"");
+    ClassNode concreteBuilder2 = dw.getClass(""com.cnblog.clarck.ConcrateBuilder2"");
+
+    // Verify that Concrete Builders extend the Builder abstract class
+    assertTrue(concreteBuilder1.extendsClass(builderClass));
+    assertTrue(concreteBuilder2.extendsClass(builderClass));
+
+    // Verify that Concrete Builders implement the required methods
+    MethodNode buildPartA1 = concreteBuilder1.getDeclaredMethod(""buildPartA()"");
+    MethodNode buildPartB1 = concreteBuilder1.getDeclaredMethod(""buildPartB()"");
+    MethodNode getResult1 = concreteBuilder1.getDeclaredMethod(""getResult()"");
+
+    MethodNode buildPartA2 = concreteBuilder2.getDeclaredMethod(""buildPartA()"");
+    MethodNode buildPartB2 = concreteBuilder2.getDeclaredMethod(""buildPartB()"");
+    MethodNode getResult2 = concreteBuilder2.getDeclaredMethod(""getResult()"");
+
+    assertNotNull(buildPartA1);
+    assertNotNull(buildPartB1);
+    assertNotNull(getResult1);
+
+    assertNotNull(buildPartA2);
+    assertNotNull(buildPartB2);
+    assertNotNull(getResult2);
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+27,"@Test
+public void testProductIndependenceFromBuilder() throws Exception {
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode productClass = dw.getClass(""com.cnblog.clarck.Product"");
+    ClassNode builderClass = dw.getClass(""com.cnblog.clarck.Builder"");
+    ClassNode concreteBuilder1 = dw.getClass(""com.cnblog.clarck.ConcrateBuilder1"");
+    ClassNode concreteBuilder2 = dw.getClass(""com.cnblog.clarck.ConcrateBuilder2"");
+
+    Set<ClassNode> callerClasses = productClass.getCallerClasses();
+
+    assertFalse(callerClasses.contains(builderClass));
+    assertFalse(callerClasses.contains(concreteBuilder1));
+    assertFalse(callerClasses.contains(concreteBuilder2));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+28,"@Test
+public void testDirectorOnlyKnowsBuilderClass() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+    ClassNode director = dw.getClass(""com.cnblog.clarck.Director"");
+    ClassNode builder = dw.getClass(""com.cnblog.clarck.Builder"");
+    ClassNode concreteBuilder1 = dw.getClass(""com.cnblog.clarck.ConcrateBuilder1"");
+    ClassNode concreteBuilder2 = dw.getClass(""com.cnblog.clarck.ConcrateBuilder2"");
+
+    Set<ClassNode> calleeClasses = director.getCalleeClasses();
+
+    assertTrue(calleeClasses.contains(builder));
+    assertFalse(calleeClasses.contains(concreteBuilder1));
+    assertFalse(calleeClasses.contains(concreteBuilder2));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+29,"@Test
+public void testProductAccessibleOnlyThroughGetResult() throws Exception {
+    // Always instantiate DesignWizard exactly like this
+    DesignWizard dw = new DesignWizard(""bin"");
+
+    // Get the classes involved in the Builder pattern
+    ClassNode builderClass = dw.getClass(""com.cnblog.clarck.Builder"");
+    ClassNode concreteBuilder1 = dw.getClass(""com.cnblog.clarck.ConcrateBuilder1"");
+    ClassNode concreteBuilder2 = dw.getClass(""com.cnblog.clarck.ConcrateBuilder2"");
+    ClassNode productClass = dw.getClass(""com.cnblog.clarck.Product"");
+
+    // Get the getResult() method from the Builder class
+    MethodNode getResultMethod = builderClass.getMethod(""M:com.cnblog.clarck.Builder.getResult()"");
+
+    // Get the caller methods of the Product class
+    Set<MethodNode> callerMethods = productClass.getCallerMethods();
+
+    // Assert that the only method that can create or access the Product is the getResult() method
+    assertTrue(callerMethods.contains(getResultMethod));
+    assertFalse(callerMethods.contains(concreteBuilder1.getMethod(""M:com.cnblog.clarck.ConcrateBuilder1.buildPartA()"")));
+    assertFalse(callerMethods.contains(concreteBuilder1.getMethod(""M:com.cnblog.clarck.ConcrateBuilder1.buildPartB()"")));
+    assertFalse(callerMethods.contains(concreteBuilder2.getMethod(""M:com.cnblog.clarck.ConcrateBuilder2.buildPartA()"")));
+    assertFalse(callerMethods.contains(concreteBuilder2.getMethod(""M:com.cnblog.clarck.ConcrateBuilder2.buildPartB()"")));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+30,"@Test
+public void testBuilderAndProductInSamePackage() throws Exception {
+    DesignWizard dw = new DesignWizard(""bin"");
+    PackageNode builderPackage = dw.getPackage(""com.cnblog.clarck"");
+    ClassNode builderClass = dw.getClass(""com.cnblog.clarck.Builder"");
+    ClassNode productClass = dw.getClass(""com.cnblog.clarck.Product"");
+
+    assertTrue(builderPackage.getAllClasses().contains(builderClass));
+    assertTrue(builderPackage.getAllClasses().contains(productClass));
+}",Sim,Sim,- Nada,Não,Sim,Sim,Sim,Sim,,,,
+,,,,,,,,,,,,,
+,,29,19,,1,21,22,23,21,,,, 
