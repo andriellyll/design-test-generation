@@ -1,0 +1,16 @@
+org.designwizard.common
+org.designwizard.design
+org.designwizard.design.factory
+org.designwizard.design.manager
+org.designwizard.design.manager.util
+org.designwizard.design.relation
+org.designwizard.designrules
+org.designwizard.exception
+org.designwizard.extractor
+org.designwizard.extractor.asm
+org.designwizard.extractor.asm.event
+org.designwizard.extractor.asm.util
+org.designwizard.extractor.asm.visitor
+org.designwizard.main
+org.designwizard.main.util
+org.designwizard.patternchecker
