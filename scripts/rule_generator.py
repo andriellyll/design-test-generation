@@ -1,6 +1,8 @@
 from openai import OpenAI
 import os
 import dotenv
+import csv
+from pathlib import Path
 
 dotenv.load_dotenv()
 
@@ -28,4 +30,11 @@ completion = client.chat.completions.create(
     ]
 )
 
-print(completion['choices'][0]['message']['content'])
+response = completion['choices'][0]['message']['content']
+
+output_dir = Path('output')
+output_dir.mkdir(exist_ok=True)
+output_file = output_dir / 'rules.txt'
+
+with open(output_file, 'a', encoding='utf-8') as txtfile:
+    txtfile.write(response.strip() + '\n')
