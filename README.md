@@ -118,7 +118,7 @@ To execute the generated design tests:
 
 1. Copy the Java test code(s) from the output file in `output/saida-{date and time}.txt`.
 2. Paste the code into `src/test/DesignTest.java` inside the `codebase` folder corresponding to the chosen design pattern.
-3. Compile and run using the Java commands already described earlier in the README.
+3. Compile and run using the Java commands already described in the next step.
 
 ---
 
