@@ -6,6 +6,8 @@ This repository contains all datasets, scripts, and supplementary material assoc
 > *Andrielly Lucena, Everton L. G. Alves, João Brunet*  
 > *Accepted at the Brazilian Symposium on Software Engineering (SBES 2025)*
 
+The PDF version of the paper can be found in the file [`paper.pdf`](./paper.pdf) included in this repository.
+
 ---
 
 ## Abstract
@@ -35,11 +37,34 @@ Ensuring architectural conformance is a key challenge in software engineering. T
 └── README.md
 
 
-````
+```
+---
+
+## Environment Setup
+
+To reproduce the experiments, make sure you have the following installed:
+
+- **Python** 3.13.3
+- **Java** 8 (specifically Java 8, not newer versions)
+- **Docker** (for running PostgreSQL with pgvector)
+- **PostgreSQL** (will be used via Docker)
+
+Before running the scripts, configure the environment variables:
+
+1. Copy the example environment file:
+
+   ```bash
+   cp .env.example .env
+    ```
+
+2. Then, edit the `.env` file and add your API keys:
+
+   - `OPENAI_API_KEY` – [Get your key here](https://platform.openai.com/account/api-keys)
+   - `MISTRAL_API_KEY` – [Get your key here](https://console.mistral.ai/api-keys)
 
 ---
 
-## Python Requirements Installation
+### Python Requirements Installation
 
 It is recommended to use a Python virtual environment (e.g., with `venv`):
 
@@ -51,9 +76,7 @@ pip install -r requirements.txt
 
 ---
 
-## Running the Pipeline
-
-### 1. Set up PostgreSQL with pgvector
+### Set up PostgreSQL with pgvector
 
 You must be running a PostgreSQL database with `pgvector` support. To start a container with the required setup:
 
@@ -64,13 +87,11 @@ docker run --name pgvector-db \
   -e POSTGRES_DB=designwizard_docs \
   -p 5432:5432 \
   -d pgvector/pgvector:pg16
-````
+```
 
-Make sure to configure your `.env` or environment variables to match the credentials used above.
+## Running the Pipeline
 
----
-
-### 2. Ingest Design Wizard documentation
+### 1. Ingest Design Wizard documentation
 
 The documentation used for the RAG pipeline is located in `data/doc/`. To store it in the database as vector embeddings, run:
 
@@ -80,7 +101,7 @@ python scripts/vector_creation.py
 
 ---
 
-### 3. Generate Natural Language Rules
+### 2. Generate Natural Language Rules
 
 To generate design rules in natural language from real-world discussion examples:
 
@@ -96,7 +117,7 @@ The result will be saved in `output/rules.txt`.
 
 ---
 
-### 4. Select and Add Rules for Test Generation
+### 3. Select and Add Rules for Test Generation
 
 After manually selecting the desired rules (from `output/rules.txt`), add them as an array named `rules` in the file `scripts/query.py`:
 
@@ -112,7 +133,7 @@ The script will iterate over this array and generate a design test for each rule
 
 ---
 
-### 5. Execute the Generated Design Tests
+### 4. Execute the Generated Design Tests
 
 To execute the generated design tests:
 
