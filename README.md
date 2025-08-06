@@ -62,8 +62,6 @@ Before running the scripts, configure the environment variables:
    - `OPENAI_API_KEY` – [Get your key here](https://platform.openai.com/account/api-keys)
    - `MISTRAL_API_KEY` – [Get your key here](https://console.mistral.ai/api-keys)
 
----
-
 ### Python Requirements Installation
 
 It is recommended to use a Python virtual environment (e.g., with `venv`):
@@ -73,8 +71,6 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
-
----
 
 ### Set up PostgreSQL with pgvector
 
